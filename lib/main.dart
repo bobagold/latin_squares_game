@@ -27,15 +27,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final int _dimension = 5;
   final double _cellWidth = 60;
   bool _valid = true;
+  bool _solved = true;
   final List<TextEditingController> _controllers = [];
 
   void _clear() {
     for (var controller in _controllers) {
       controller.text = '0';
     }
-    setState(() {
-      _valid = false;
-    });
+    _onChanged();
   }
 
   TextEditingValue _textInputFormatter(
@@ -68,7 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Color get _validityColor => _valid ? Colors.black : Colors.red;
+  Color get _validityColor =>
+      _valid ? (_solved ? Colors.green : Colors.black) : Colors.red;
 
   Widget _buildTable(BuildContext context) => Table(
         border: TableBorder.all(color: _validityColor),
@@ -86,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _buildCell(BuildContext context, int i, int j) => TextFormField(
         controller: _controller(i, j),
+        onChanged: (t) => _onChanged(),
         inputFormatters: [TextInputFormatter.withFunction(_textInputFormatter)],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
@@ -110,4 +111,48 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     super.dispose();
   }
+
+  void _onChanged() {
+    var numbers =
+        _controllers.map((controller) => int.parse(controller.text)).toList();
+    var checks = validateLatinSquare(numbers, _dimension);
+    setState(() {
+      _valid = checks[0];
+      _solved = checks[1];
+    });
+  }
+}
+
+/// validate latin square
+List<bool> validateLatinSquare(List<int> numbers, int dimension) {
+  var valid = true;
+  var solved = true;
+  for (var i = 0; i < dimension; i++) {
+    var rowMap = <int, int>{};
+    var colMap = <int, int>{};
+    for (var j = 0; j < dimension; j++) {
+      var rowValue = numbers[i * dimension + j];
+      if (rowValue == 0) {
+        solved = false;
+      }
+      if (rowMap.containsKey(rowValue)) {
+        solved = false;
+        valid = false;
+        break;
+      }
+      if (rowValue != 0) {
+        rowMap[rowValue] = j;
+      }
+      var colValue = numbers[j * dimension + i];
+      if (colMap.containsKey(colValue)) {
+        solved = false;
+        valid = false;
+        break;
+      }
+      if (colValue != 0) {
+        colMap[colValue] = j;
+      }
+    }
+  }
+  return [valid, solved];
 }
