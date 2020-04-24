@@ -19,7 +19,6 @@ void main() {
     await tester.tap(find.byTooltip('Clear'));
     await tester.pump();
 
-    expect(find.text('0'), findsNWidgets(25));
-    expect(find.text('1'), findsNothing);
+    expect(find.text('0'), findsNWidgets(20));
   });
 }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -31,8 +33,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<TextEditingController> _controllers = [];
 
   void _clear() {
-    for (var controller in _controllers) {
-      controller.text = '0';
+    var diagonal = randomizeDiagonal(_dimension);
+    for (var entry in _controllers.asMap().entries) {
+      var i = entry.key ~/ _dimension;
+      var j = entry.key % _dimension;
+      var value = i == j ? diagonal[j] : 0;
+      entry.value.text = '$value';
     }
     _onChanged();
   }
@@ -155,4 +161,10 @@ List<bool> validateLatinSquare(List<int> numbers, int dimension) {
     }
   }
   return [valid, solved];
+}
+
+/// generate random diagonal for a latin square
+List<int> randomizeDiagonal(int dimension) {
+  var rand = Random();
+  return List.generate(dimension, (i) => rand.nextInt(dimension) + 1);
 }
