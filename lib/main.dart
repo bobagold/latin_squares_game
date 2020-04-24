@@ -24,11 +24,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final int _dimension = 5;
+  final double _cellWidth = 60;
   bool _valid = true;
+  final List<TextEditingController> _controllers = [];
 
-  void _invertValidity() {
+  void _clear() {
+    for (var controller in _controllers) {
+      controller.text = '0';
+    }
     setState(() {
-      _valid = !_valid;
+      _valid = false;
     });
   }
 
@@ -40,9 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return oldValue.copyWith(
         text: newValue.text.substring(startIndex, startIndex + 1));
   }
-
-  int _dimension = 5;
-  double _cellWidth = 60;
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +61,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _invertValidity,
-        tooltip: 'Invert',
-        child: Icon(Icons.invert_colors),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: _clear,
+        tooltip: 'Clear',
+        child: Icon(Icons.delete),
+      ),
     );
   }
 
@@ -82,10 +85,29 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
   Widget _buildCell(BuildContext context, int i, int j) => TextFormField(
-        initialValue: (1 + (i + j) % _dimension).toString(),
+        controller: _controller(i, j),
         inputFormatters: [TextInputFormatter.withFunction(_textInputFormatter)],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.display1,
       );
+
+  TextEditingController _controller(int i, int j) {
+    var idx = i * _dimension + j;
+    for (var k = _controllers.length; k <= idx; k++) {
+      var value = _initialValue(k ~/ _dimension, k % _dimension);
+      _controllers.add(TextEditingController(text: value.toString()));
+    }
+    return _controllers[idx];
+  }
+
+  int _initialValue(int i, int j) => 1 + (i + j) % _dimension;
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 }
