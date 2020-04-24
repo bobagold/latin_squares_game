@@ -5,6 +5,8 @@ It means, no column, no row can have duplicated numbers.
 
 [<img src="assets/Screenshot1.png" width="200" />](example)
 
+[▶️ online demo](https://dartpad.dev/71b93e18f9d72479d85cd07ce8f99e48)
+
 ## Status
 
 Proof of concept.
