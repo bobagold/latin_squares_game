@@ -19,4 +19,4 @@ To start new game, please tap the trash bin icon.
 
 # Todo
 
-* Check if user is cheating with numbers more than dimension.
+* Make a skin with smileys.

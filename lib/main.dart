@@ -138,7 +138,8 @@ List<bool> validateLatinSquare(List<int> numbers, int dimension) {
     var colMap = <int, int>{};
     for (var j = 0; j < dimension; j++) {
       var rowValue = numbers[i * dimension + j];
-      if (rowValue == 0) {
+      var allowedNumber = rowValue > 0 && rowValue <= dimension;
+      if (!allowedNumber) {
         solved = false;
       }
       if (rowMap.containsKey(rowValue)) {
@@ -146,7 +147,7 @@ List<bool> validateLatinSquare(List<int> numbers, int dimension) {
         valid = false;
         break;
       }
-      if (rowValue != 0) {
+      if (allowedNumber) {
         rowMap[rowValue] = j;
       }
       var colValue = numbers[j * dimension + i];
@@ -155,7 +156,7 @@ List<bool> validateLatinSquare(List<int> numbers, int dimension) {
         valid = false;
         break;
       }
-      if (colValue != 0) {
+      if (colValue > 0 && colValue <= dimension) {
         colMap[colValue] = j;
       }
     }
