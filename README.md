@@ -1,3 +1,5 @@
+![Dart CI](https://github.com/bobagold/latin_squares_game/workflows/Dart%20CI/badge.svg)
+
 # latinsquaresgame
 
 Latin squares game.
