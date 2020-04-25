@@ -22,3 +22,8 @@ jobs:
       - run: flutter pub get
       - run: flutter test
       - run: flutter build apk
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-release.apk
+          path: build/app/outputs/apk/release/app-release.apk
