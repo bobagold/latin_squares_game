@@ -91,6 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
   Widget _buildCell(BuildContext context, int i, int j) => TextFormField(
+        readOnly: i == j,
         controller: _controller(i, j),
         onChanged: (t) => _onChanged(),
         inputFormatters: [TextInputFormatter.withFunction(_textInputFormatter)],
