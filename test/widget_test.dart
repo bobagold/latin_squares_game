@@ -5,13 +5,14 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:latinsquaresgame/main.dart';
 
 void main() {
   testWidgets('Reset puts all to 0', (tester) async {
-    await tester.pumpWidget(MyApp());
+    await tester.pumpWidget(MaterialApp(home: GameScreen()));
 
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsNWidgets(5));

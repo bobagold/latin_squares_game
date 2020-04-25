@@ -1,11 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'skins/text_input_skin.dart';
+import 'skins/text_tap_skin.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  final List<String> _smileys = ['', '🧛‍♀️', '🧟‍♂️', '🤦🏻‍♀️', '🗿', '🙄'];
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,24 +16,35 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.yellow,
       ),
-      home: MyHomePage(),
+      home: GameScreen(values: _smileys),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+class GameScreen extends StatefulWidget {
+  final List<String> values;
+  GameScreen({Key key, this.values}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _GameScreenState createState() => _GameScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   final double _cellWidth = 60;
   bool _valid = true;
   bool _solved = true;
   final List<TextEditingController> _controllers = [];
+  List<String> _values;
+
+  @override
+  void initState() {
+    _values = widget.values;
+//    if (_values == null) {
+//      _values = List.generate(_dimension + 1, (i) => i.toString());
+//    }
+    super.initState();
+  }
 
   void _clear() {
     var diagonal = randomizeDiagonal(_dimension);
@@ -41,15 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
       entry.value.text = '$value';
     }
     _onChanged();
-  }
-
-  TextEditingValue _textInputFormatter(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    var startIndex = oldValue.selection.baseOffset;
-    return oldValue.copyWith(
-        text: newValue.text.substring(startIndex, startIndex + 1));
   }
 
   @override
@@ -90,15 +95,18 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
 
-  Widget _buildCell(BuildContext context, int i, int j) => TextFormField(
-        readOnly: i == j,
-        controller: _controller(i, j),
-        onChanged: (t) => _onChanged(),
-        inputFormatters: [TextInputFormatter.withFunction(_textInputFormatter)],
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.display1,
-      );
+  Widget _buildCell(BuildContext context, int i, int j) => _values != null
+      ? TextTapSkin(
+          controller: _controller(i, j),
+          onChanged: _onChanged,
+          readOnly: i == j,
+          values: _values,
+        )
+      : TextInputSkin(
+          controller: _controller(i, j),
+          onChanged: _onChanged,
+          readOnly: i == j,
+        );
 
   TextEditingController _controller(int i, int j) {
     var idx = i * _dimension + j;
@@ -123,10 +131,12 @@ class _MyHomePageState extends State<MyHomePage> {
     var numbers =
         _controllers.map((controller) => int.parse(controller.text)).toList();
     var checks = validateLatinSquare(numbers, _dimension);
-    setState(() {
-      _valid = checks[0];
-      _solved = checks[1];
-    });
+    if (_valid != checks[0] || _solved != checks[1]) {
+      setState(() {
+        _valid = checks[0];
+        _solved = checks[1];
+      });
+    }
   }
 }
 
