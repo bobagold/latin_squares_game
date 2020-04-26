@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v1
@@ -22,6 +22,7 @@ jobs:
       - run: flutter pub get
       - run: flutter test
       - run: flutter build apk
+      - run: flutter build ios --release --no-codesign
       - name: Archive production artifacts
         uses: actions/upload-artifact@v1
         with:
