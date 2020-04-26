@@ -3,11 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'skins/text_input_skin.dart';
 import 'skins/text_tap_skin.dart';
+import 'translations/en.dart';
+import 'translations/ru.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   final List<String> _smileys = ['', '🧛‍♀️', '🧟‍♂️', '🤦🏻‍♀️', '🗿', '🙄'];
+  final TranslationEn _translations = TranslationRu();
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +19,18 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.yellow,
       ),
-      home: GameScreen(values: _smileys),
+      home: GameScreen(
+        values: _smileys,
+        translations: _translations,
+      ),
     );
   }
 }
 
 class GameScreen extends StatefulWidget {
   final List<String> values;
-  GameScreen({Key key, this.values}) : super(key: key);
+  final TranslationEn translations;
+  GameScreen({Key key, this.values, this.translations}) : super(key: key);
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -32,6 +39,8 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   final double _cellWidth = 60;
+  TranslationEn _;
+  bool _began = false;
   bool _valid = true;
   bool _solved = true;
   final List<TextEditingController> _controllers = [];
@@ -39,6 +48,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void initState() {
+    _ = widget.translations ?? TranslationEn();
     _values = widget.values;
 //    if (_values == null) {
 //      _values = List.generate(_dimension + 1, (i) => i.toString());
@@ -67,7 +77,11 @@ class _GameScreenState extends State<GameScreen> {
         padding: EdgeInsets.symmetric(vertical: _cellWidth),
         child: Align(
           alignment: Alignment.topCenter,
-          child: Builder(builder: _buildTable),
+          child: Column(children: [
+            Builder(builder: _buildTable),
+            SizedBox(height: 30),
+            Builder(builder: _buildMessage),
+          ]),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -77,6 +91,15 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
+
+  Widget _buildMessage(BuildContext context) => Text(
+        _began
+            ? (_valid
+                ? (_solved ? _.solvedText : _.validNotSolvedText)
+                : _.invalidText)
+            : _.beginText,
+        style: Theme.of(context).textTheme.display1,
+      );
 
   Color get _validityColor =>
       _valid ? (_solved ? Colors.green : Colors.black) : Colors.red;
@@ -133,6 +156,7 @@ class _GameScreenState extends State<GameScreen> {
     var checks = validateLatinSquare(numbers, _dimension);
     if (_valid != checks[0] || _solved != checks[1]) {
       setState(() {
+        _began = true;
         _valid = checks[0];
         _solved = checks[1];
       });
