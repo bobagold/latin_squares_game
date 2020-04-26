@@ -31,5 +31,5 @@ jobs:
       - name: Archive production artifacts - ios
         uses: actions/upload-artifact@v1
         with:
-          name: app-release.apk
+          name: Runner.app
           path: build/ios/iphoneos/Runner.app
