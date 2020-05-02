@@ -1,4 +1,4 @@
-package com.actvst.bobagold.latinsquaresgame
+package com.actvst.bobagold.game.latin.square
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

@@ -1,6 +1,6 @@
 ![Dart CI](https://github.com/bobagold/latin_squares_game/workflows/Dart%20CI/badge.svg)
 
-# latinsquaresgame
+# Latin squares game
 
 Latin squares game.
 It means, no column, no row can have duplicated numbers.
