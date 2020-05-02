@@ -19,4 +19,4 @@ To start new game, please tap the trash bin icon.
 
 # Todo
 
-* Make a skin with smileys.
+* Ability to switch between skins.
