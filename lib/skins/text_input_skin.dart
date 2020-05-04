@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'skin.dart';
+
 /// TextInput skin for the game board
 @immutable
-class TextInputSkin extends StatelessWidget {
-  final TextEditingController controller;
-  final VoidCallback onChanged;
-  final bool readOnly;
-
+class TextInputSkin extends Skin {
   const TextInputSkin({
     Key key,
-    @required this.controller,
-    @required this.onChanged,
-    @required this.readOnly,
-  }) : super(key: key);
+    TextEditingController controller,
+    VoidCallback onChanged,
+    bool readOnly,
+  }) : super(
+          key: key,
+          controller: controller,
+          onChanged: onChanged,
+          readOnly: readOnly,
+        );
 
   TextEditingValue _textInputFormatter(
     TextEditingValue oldValue,

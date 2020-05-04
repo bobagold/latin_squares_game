@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'skin.dart';
 
 /// Text tap skin for the game board
-class TextTapSkin extends StatelessWidget {
-  final TextEditingController controller;
-  final VoidCallback onChanged;
-  final bool readOnly;
+class TextTapSkin extends Skin {
   final List<String> values;
 
   const TextTapSkin({
     Key key,
-    @required this.controller,
-    @required this.onChanged,
-    @required this.readOnly,
+    TextEditingController controller,
+    VoidCallback onChanged,
+    bool readOnly,
     @required this.values,
-  }) : super(key: key);
+  }) : super(
+          key: key,
+          controller: controller,
+          onChanged: onChanged,
+          readOnly: readOnly,
+        );
 
   @override
   Widget build(BuildContext context) => InkWell(

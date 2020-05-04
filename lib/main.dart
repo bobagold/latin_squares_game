@@ -45,14 +45,15 @@ class _GameScreenState extends State<GameScreen> {
   bool _solved = true;
   final List<TextEditingController> _controllers = [];
   List<String> _values;
+  bool _useTextTapSkin = true;
 
   @override
   void initState() {
     _ = widget.translations ?? TranslationEn();
     _values = widget.values;
-//    if (_values == null) {
-//      _values = List.generate(_dimension + 1, (i) => i.toString());
-//    }
+    if (_values == null) {
+      _values = List.generate(_dimension + 1, (i) => i.toString());
+    }
     super.initState();
   }
 
@@ -67,6 +68,28 @@ class _GameScreenState extends State<GameScreen> {
     _onChanged();
   }
 
+  void _switchLang() {
+    setState(() {
+      _ = _ is TranslationRu ? TranslationEn() : TranslationRu();
+    });
+  }
+
+  void _switchSkin() {
+    setState(() {
+      _useTextTapSkin = !_useTextTapSkin;
+    });
+  }
+
+  void _tapBottomNav(int idx) {
+    if (idx == 0) {
+      return _clear();
+    }
+    if (idx == 1) {
+      return _switchLang();
+    }
+    return _switchSkin();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,15 +102,27 @@ class _GameScreenState extends State<GameScreen> {
           alignment: Alignment.topCenter,
           child: Column(children: [
             Builder(builder: _buildTable),
-            SizedBox(height: 30),
+            SizedBox(height: 0),
             Builder(builder: _buildMessage),
           ]),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _clear,
-        tooltip: 'Clear',
-        child: Icon(Icons.delete),
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: _tapBottomNav,
+        items: [
+          BottomNavigationBarItem(
+            title: Text('New'),
+            icon: Icon(Icons.delete),
+          ),
+          BottomNavigationBarItem(
+            title: Text('Language'),
+            icon: Icon(Icons.language),
+          ),
+          BottomNavigationBarItem(
+            title: Text('Skin'),
+            icon: Icon(Icons.looks_one),
+          ),
+        ],
       ),
     );
   }
@@ -118,7 +153,7 @@ class _GameScreenState extends State<GameScreen> {
         ),
       );
 
-  Widget _buildCell(BuildContext context, int i, int j) => _values != null
+  Widget _buildCell(BuildContext context, int i, int j) => _useTextTapSkin
       ? TextTapSkin(
           controller: _controller(i, j),
           onChanged: _onChanged,

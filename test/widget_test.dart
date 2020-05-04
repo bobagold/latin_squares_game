@@ -17,7 +17,7 @@ void main() {
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsNWidgets(5));
 
-    await tester.tap(find.byTooltip('Clear'));
+    await tester.tap(find.byIcon(Icons.delete));
     await tester.pump();
 
     expect(find.text('0'), findsNWidgets(20));
