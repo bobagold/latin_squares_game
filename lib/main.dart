@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Latin squares game',
       theme: ThemeData(
         primarySwatch: Colors.yellow,
       ),
@@ -120,7 +120,7 @@ class _GameScreenState extends State<GameScreen> {
           ),
           BottomNavigationBarItem(
             title: Text('Skin'),
-            icon: Icon(Icons.looks_one),
+            icon: Icon(_useTextTapSkin ? Icons.looks_one : Icons.tag_faces),
           ),
         ],
       ),

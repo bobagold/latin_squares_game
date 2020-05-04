@@ -19,4 +19,7 @@ To start new game, please tap the trash bin icon.
 
 # Todo
 
-* Ability to switch between skins.
+* Real translations.
+* Backspace writes zero.
+* Unfocus on tap.
+* Automatic screenshots.
