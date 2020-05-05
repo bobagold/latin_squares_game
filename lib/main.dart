@@ -1,6 +1,8 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'logic/logic.dart';
 import 'skins/text_input_skin.dart';
 import 'skins/text_tap_skin.dart';
 import 'translations/en.dart';
@@ -11,6 +13,10 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   final List<String> _smileys = ['', '🧛‍♀️', '🧟‍♂️', '🤦🏻‍♀️', '🗿', '🙄'];
   final TranslationEn _translations = TranslationRu();
+  final StreamController<String> requests;
+  final StreamController<String> responses;
+
+  MyApp({Key key, this.requests, this.responses}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +28,8 @@ class MyApp extends StatelessWidget {
       home: GameScreen(
         values: _smileys,
         translations: _translations,
+        requests: requests,
+        responses: responses,
       ),
     );
   }
@@ -30,7 +38,11 @@ class MyApp extends StatelessWidget {
 class GameScreen extends StatefulWidget {
   final List<String> values;
   final TranslationEn translations;
-  GameScreen({Key key, this.values, this.translations}) : super(key: key);
+  final StreamController<String> requests;
+  final StreamController<String> responses;
+  GameScreen(
+      {Key key, this.values, this.translations, this.requests, this.responses})
+      : super(key: key);
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -46,19 +58,50 @@ class _GameScreenState extends State<GameScreen> {
   final List<TextEditingController> _controllers = [];
   List<String> _values;
   bool _useTextTapSkin = true;
+  List<int> _diagonal;
+  StreamSubscription<String> _subscription;
 
   @override
   void initState() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     _ = widget.translations ?? TranslationEn();
     _values = widget.values;
     if (_values == null) {
       _values = List.generate(_dimension + 1, (i) => i.toString());
     }
+    _diagonal = List.generate(_dimension + 1, (i) => _initialValue(i, i));
+    _subscribe();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    _subscribe();
+    super.didChangeDependencies();
+  }
+
+  void _subscribe() {
+    _subscription?.cancel();
+    widget.requests?.stream?.listen((event) {
+      if (event == 'diagonal'.toUpperCase()) {
+        return widget.responses.sink.add(_diagonal.join(','));
+      }
+      if (event == 'is_smileys'.toUpperCase()) {
+        return widget.responses.sink.add(_useTextTapSkin ? 'true' : 'false');
+      }
+      if (event == 'reset'.toUpperCase()) {
+        _reset();
+        return widget.responses.sink.add('ok');
+      }
+      widget.responses.sink.add('Hi, $event');
+    });
   }
 
   void _clear() {
     var diagonal = randomizeDiagonal(_dimension);
+    _diagonal = diagonal;
     for (var entry in _controllers.asMap().entries) {
       var i = entry.key ~/ _dimension;
       var j = entry.key % _dimension;
@@ -66,6 +109,22 @@ class _GameScreenState extends State<GameScreen> {
       entry.value.text = '$value';
     }
     _onChanged();
+  }
+
+  void _reset() {
+    _useTextTapSkin = true;
+    _ = TranslationRu();
+    for (var entry in _controllers.asMap().entries) {
+      var i = entry.key ~/ _dimension;
+      var j = entry.key % _dimension;
+      var value = _initialValue(i, j);
+      entry.value.text = '$value';
+    }
+    _began = false;
+    _valid = true;
+    _solved = true;
+    _diagonal = List.generate(_dimension + 1, (i) => _initialValue(i, i));
+    setState(() {});
   }
 
   void _switchLang() {
@@ -96,16 +155,12 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         title: Text('Latin squares game'),
       ),
-      body: Container(
-        padding: EdgeInsets.symmetric(vertical: _cellWidth),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Column(children: [
-            Builder(builder: _buildTable),
-            SizedBox(height: 0),
-            Builder(builder: _buildMessage),
-          ]),
-        ),
+      body: Builder(
+        builder: (context) => _bodyBuilder(context, children: [
+          Builder(builder: _buildTable),
+          SizedBox(height: 30),
+          Builder(builder: _buildMessageArea),
+        ]),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: _tapBottomNav,
@@ -115,17 +170,43 @@ class _GameScreenState extends State<GameScreen> {
             icon: Icon(Icons.delete),
           ),
           BottomNavigationBarItem(
-            title: Text('Language'),
+            title: Text(_ is TranslationRu ? 'en' : 'ru'),
             icon: Icon(Icons.language),
           ),
           BottomNavigationBarItem(
-            title: Text('Skin'),
+            title: Text(_useTextTapSkin ? 'digits' : 'smileys'),
             icon: Icon(_useTextTapSkin ? Icons.looks_one : Icons.tag_faces),
           ),
         ],
       ),
     );
   }
+
+  Widget _bodyBuilder(BuildContext context, {List<Widget> children}) =>
+      GestureDetector(
+        onTap: () => _unFocus(context),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: _cellWidth),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Column(children: children),
+          ),
+        ),
+      );
+
+  void _unFocus(BuildContext context) {
+    var currentFocus = FocusScope.of(context);
+
+    if (!currentFocus.hasPrimaryFocus) {
+      currentFocus.unfocus();
+    }
+  }
+
+  Widget _buildMessageArea(BuildContext context) => Expanded(
+        child: SingleChildScrollView(
+          child: _buildMessage(context),
+        ),
+      );
 
   Widget _buildMessage(BuildContext context) => Text(
         _began
@@ -134,6 +215,7 @@ class _GameScreenState extends State<GameScreen> {
                 : _.invalidText)
             : _.beginText,
         style: Theme.of(context).textTheme.display1,
+        key: Key('status_message'),
       );
 
   Color get _validityColor =>
@@ -155,12 +237,14 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildCell(BuildContext context, int i, int j) => _useTextTapSkin
       ? TextTapSkin(
+          key: Key('cell${i}x$j'),
           controller: _controller(i, j),
           onChanged: _onChanged,
           readOnly: i == j,
           values: _values,
         )
       : TextInputSkin(
+          key: Key('cell${i}x$j'),
           controller: _controller(i, j),
           onChanged: _onChanged,
           readOnly: i == j,
@@ -179,6 +263,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    _subscription?.cancel();
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -197,45 +282,4 @@ class _GameScreenState extends State<GameScreen> {
       });
     }
   }
-}
-
-/// validate latin square
-List<bool> validateLatinSquare(List<int> numbers, int dimension) {
-  var valid = true;
-  var solved = true;
-  for (var i = 0; i < dimension; i++) {
-    var rowMap = <int, int>{};
-    var colMap = <int, int>{};
-    for (var j = 0; j < dimension; j++) {
-      var rowValue = numbers[i * dimension + j];
-      var allowedNumber = rowValue > 0 && rowValue <= dimension;
-      if (!allowedNumber) {
-        solved = false;
-      }
-      if (rowMap.containsKey(rowValue)) {
-        solved = false;
-        valid = false;
-        break;
-      }
-      if (allowedNumber) {
-        rowMap[rowValue] = j;
-      }
-      var colValue = numbers[j * dimension + i];
-      if (colMap.containsKey(colValue)) {
-        solved = false;
-        valid = false;
-        break;
-      }
-      if (colValue > 0 && colValue <= dimension) {
-        colMap[colValue] = j;
-      }
-    }
-  }
-  return [valid, solved];
-}
-
-/// generate random diagonal for a latin square
-List<int> randomizeDiagonal(int dimension) {
-  var rand = Random();
-  return List.generate(dimension, (i) => rand.nextInt(dimension) + 1);
 }

@@ -28,6 +28,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   effective_dart:
+  flutter_driver:
+    sdk: flutter
+  test:
 
 
 # For information on the generic Dart part of this file, see the

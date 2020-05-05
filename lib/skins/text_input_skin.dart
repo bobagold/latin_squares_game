@@ -23,6 +23,12 @@ class TextInputSkin extends Skin {
     TextEditingValue newValue,
   ) {
     var startIndex = oldValue.selection.baseOffset;
+    if (newValue.text.length == 1) {
+      return newValue;
+    }
+    if (newValue.text.length == 0) {
+      return oldValue.copyWith(text: '0');
+    }
     return oldValue.copyWith(
         text: newValue.text.substring(startIndex, startIndex + 1));
   }
