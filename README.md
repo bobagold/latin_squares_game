@@ -5,7 +5,7 @@
 Latin squares game.
 It means, no column, no row can have duplicated numbers.
 
-[<img src="assets/Screenshot1.png" width="200" />](example)
+[<img src="assets/gameplay.gif" width="200" />](example)
 
 [▶️ online demo](https://dartpad.dev/71b93e18f9d72479d85cd07ce8f99e48)
 
@@ -19,7 +19,6 @@ To start new game, please tap the trash bin icon.
 
 # Todo
 
-* Real translations.
 * Automatically record gameplay.gif.
 * Help (do next valid turn).
 * Translate the rest.

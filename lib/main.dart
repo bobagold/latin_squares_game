@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
     setLocale,
   }) =>
       MaterialApp(
+        debugShowCheckedModeBanner: false,
         localizationsDelegates: localizationsDelegates,
         supportedLocales: supportedLocales,
         locale: locale,
