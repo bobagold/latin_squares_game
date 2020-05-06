@@ -10,6 +10,13 @@ void main() {
 
     var timeout = Duration(seconds: 2);
 
+    var findAllCellsMessage = find.text('fill all cells');
+
+    Future _startNewGame() => driver.tap(find.text('New'), timeout: timeout);
+
+    Future _waitForIt(SerializableFinder finder) =>
+        driver.waitFor(finder, timeout: timeout);
+
     Future _enterNumber(int i, int j, num) async {
       await driver.tap(find.byValueKey('cell${i}x$j'), timeout: timeout);
       await driver.enterText('$num', timeout: timeout);
@@ -53,7 +60,6 @@ void main() {
 
     setUp(() async {
       await _reset();
-      await driver.tap(find.text('en'), timeout: timeout);
     });
 
     test('starts at smiley skin', () async {
@@ -61,32 +67,32 @@ void main() {
     });
 
     test('starts new game', () async {
-      await driver.tap(find.text('New'), timeout: timeout);
+      await _startNewGame();
       await _takeScreenshot('screenshots/new_game.png');
     });
 
     test('makes one move', () async {
-      await driver.tap(find.text('New'), timeout: timeout);
+      await _startNewGame();
       await _digits();
-      await driver.waitFor(find.text('fill all cells'));
+      await _waitForIt(findAllCellsMessage);
       var diagonal = await _getDiagonal();
       var unique = (diagonal[0] + diagonal[1]) % (diagonal.length + 1);
       await _enterNumber(0, 1, unique);
-      await driver.waitFor(find.text('fill all cells'));
+      await _waitForIt(findAllCellsMessage);
       await _enterNumber(0, 1, diagonal[0]);
-      await driver.waitFor(find.text('there are duplicates'));
+      await _waitForIt(find.text('there are duplicates'));
       await _smileys();
       await _takeScreenshot('screenshots/wrong_move.png');
       await _digits();
       await _enterNumber(0, 1, unique);
-      await driver.waitFor(find.text('fill all cells'));
+      await _waitForIt(findAllCellsMessage);
       await _takeScreenshot('screenshots/new_game_numbers.png');
       await _smileys();
       await _takeScreenshot('screenshots/move.png');
     });
 
     test('solves', () async {
-      await driver.tap(find.text('New'), timeout: timeout);
+      await _startNewGame();
       await _digits();
       var diagonal = await _getDiagonal();
       var map = fromDiagonal(diagonal);

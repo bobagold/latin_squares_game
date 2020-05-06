@@ -20,6 +20,6 @@ To start new game, please tap the trash bin icon.
 # Todo
 
 * Real translations.
-* Backspace writes zero.
-* Unfocus on tap.
-* Automatic screenshots.
+* Automatically record gameplay.gif.
+* Help (do next valid turn).
+* Translate the rest.

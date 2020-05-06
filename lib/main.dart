@@ -1,48 +1,61 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'logic/logic.dart';
 import 'skins/text_input_skin.dart';
 import 'skins/text_tap_skin.dart';
-import 'translations/en.dart';
-import 'translations/ru.dart';
+import 'translations/localizations.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   final List<String> _smileys = ['', '🧛‍♀️', '🧟‍♂️', '🤦🏻‍♀️', '🗿', '🙄'];
-  final TranslationEn _translations = TranslationRu();
   final StreamController<String> requests;
   final StreamController<String> responses;
 
   MyApp({Key key, this.requests, this.responses}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Latin squares game',
-      theme: ThemeData(
-        primarySwatch: Colors.yellow,
-      ),
-      home: GameScreen(
-        values: _smileys,
-        translations: _translations,
-        requests: requests,
-        responses: responses,
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppLocalizationsWrapper(builder: _builder);
+
+  Widget _builder({
+    localizationsDelegates,
+    supportedLocales,
+    locale,
+    setLocale,
+  }) =>
+      MaterialApp(
+        localizationsDelegates: localizationsDelegates,
+        supportedLocales: supportedLocales,
+        locale: locale,
+        title: 'Latin squares game',
+        theme: ThemeData(
+          primarySwatch: Colors.yellow,
+        ),
+        home: GameScreen(
+          values: _smileys,
+          setLocale: setLocale,
+          requests: requests,
+          responses: responses,
+        ),
+      );
 }
 
 class GameScreen extends StatefulWidget {
   final List<String> values;
-  final TranslationEn translations;
+  final ValueSetter<Locale> setLocale;
   final StreamController<String> requests;
   final StreamController<String> responses;
-  GameScreen(
-      {Key key, this.values, this.translations, this.requests, this.responses})
-      : super(key: key);
+  GameScreen({
+    Key key,
+    this.values,
+    this.setLocale,
+    this.requests,
+    this.responses,
+  }) : super(key: key);
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -51,7 +64,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   final double _cellWidth = 60;
-  TranslationEn _;
+  AppLocalizations _;
   bool _began = false;
   bool _valid = true;
   bool _solved = true;
@@ -66,7 +79,6 @@ class _GameScreenState extends State<GameScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    _ = widget.translations ?? TranslationEn();
     _values = widget.values;
     if (_values == null) {
       _values = List.generate(_dimension + 1, (i) => i.toString());
@@ -78,6 +90,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void didChangeDependencies() {
+    _ = AppLocalizations.of(context);
     _subscribe();
     super.didChangeDependencies();
   }
@@ -113,7 +126,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void _reset() {
     _useTextTapSkin = true;
-    _ = TranslationRu();
+    widget.setLocale(null);
     for (var entry in _controllers.asMap().entries) {
       var i = entry.key ~/ _dimension;
       var j = entry.key % _dimension;
@@ -128,9 +141,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _switchLang() {
-    setState(() {
-      _ = _ is TranslationRu ? TranslationEn() : TranslationRu();
-    });
+    widget.setLocale(AppLocalizations.nextLocaleOf(context));
   }
 
   void _switchSkin() {
@@ -170,7 +181,7 @@ class _GameScreenState extends State<GameScreen> {
             icon: Icon(Icons.delete),
           ),
           BottomNavigationBarItem(
-            title: Text(_ is TranslationRu ? 'en' : 'ru'),
+            title: Text(AppLocalizations.nextLocaleOf(context).languageCode),
             icon: Icon(Icons.language),
           ),
           BottomNavigationBarItem(

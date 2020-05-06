@@ -9,10 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:latinsquaresgame/main.dart';
+import 'package:latinsquaresgame/translations/localizations.dart';
 
 void main() {
   testWidgets('Reset puts all to 0', (tester) async {
-    await tester.pumpWidget(MaterialApp(home: GameScreen()));
+    await tester.pumpWidget(MaterialApp(
+      home: AppLocalizationsWidgetWrapper(
+        locale: Locale('en'),
+        child: GameScreen(),
+      ),
+    ));
+    await tester.pumpAndSettle();
 
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsNWidgets(5));
