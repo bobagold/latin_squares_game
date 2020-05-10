@@ -17,6 +17,15 @@ Lets user to solve simple 5x5 puzzle.
 
 To start new game, please tap the trash bin icon.
 
+## Flutter dev. info
+
+* Continuous integration & deployment (CI/CD) using GitHub Actions
+* Unit, Widget & Functional tests
+* Code linting, formatting
+* Git hooks
+* Generated launcher icons
+* Localizations
+
 # Todo
 
 * Automatically record gameplay.gif.

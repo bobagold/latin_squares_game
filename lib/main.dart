@@ -65,9 +65,11 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   final double _cellWidth = 60;
+  final double _cellHeight = 65;
   AppLocalizations _;
   bool _began = false;
   bool _valid = true;
+  List<int> _invalidCells = [];
   bool _solved = true;
   final List<TextEditingController> _controllers = [];
   List<String> _values;
@@ -230,21 +232,34 @@ class _GameScreenState extends State<GameScreen> {
         key: Key('status_message'),
       );
 
-  Color get _validityColor =>
-      _valid ? (_solved ? Colors.green : Colors.black) : Colors.red;
+  Color _validityCellBorderColor(int i, int j) => _solved
+      ? Colors.green
+      : (_invalidCells.contains(i * _dimension + j)
+          ? Colors.red
+          : Colors.black);
 
   Widget _buildTable(BuildContext context) => Table(
-        border: TableBorder.all(color: _validityColor),
         defaultColumnWidth: FixedColumnWidth(_cellWidth),
         children: List.generate(
           _dimension,
           (i) => TableRow(
             children: List.generate(
               _dimension,
-              (j) => _buildCell(context, i, j),
+              (j) => _buildCellWithBorder(context, i, j),
             ),
           ),
         ),
+      );
+
+  Widget _buildCellWithBorder(BuildContext context, int i, int j) => Container(
+        height: _cellHeight,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: _validityCellBorderColor(i, j),
+            width: 1,
+          ),
+        ),
+        child: _buildCell(context, i, j),
       );
 
   Widget _buildCell(BuildContext context, int i, int j) => _useTextTapSkin
@@ -285,12 +300,13 @@ class _GameScreenState extends State<GameScreen> {
   void _onChanged() {
     var numbers =
         _controllers.map((controller) => int.parse(controller.text)).toList();
-    var checks = validateLatinSquare(numbers, _dimension);
+    var checks = validateLatinSquareCells(numbers, _dimension);
     if (_valid != checks[0] || _solved != checks[1]) {
       setState(() {
         _began = true;
-        _valid = checks[0];
-        _solved = checks[1];
+        _valid = checks[0].isEmpty;
+        _solved = checks[0].isEmpty && checks[1].isEmpty;
+        _invalidCells = checks[0];
       });
     }
   }

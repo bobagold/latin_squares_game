@@ -35,6 +35,9 @@ void main() {
     test('Detect 112 is unsolvable', () {
       expect(isUnsolvableDiagonal([1, 1, 2]), true);
     });
+    test('Detect 25555 is unsolvable', () {
+      expect(isUnsolvableDiagonal([2, 5, 5, 5, 5]), true);
+    });
     test('Cannot solve 112', () {
       expect(solve(fromDiagonal([1, 1, 2])), false);
     });

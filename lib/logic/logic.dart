@@ -2,8 +2,16 @@ import 'dart:math';
 
 /// validate latin square
 List<bool> validateLatinSquare(List<int> numbers, int dimension) {
-  var valid = true;
-  var solved = true;
+  var lists = validateLatinSquareCells(numbers, dimension);
+  var invalidCells = lists[0];
+  var emptyCells = lists[1];
+  return [invalidCells.isEmpty, invalidCells.isEmpty && emptyCells.isEmpty];
+}
+
+/// validate latin square cells
+List<List<int>> validateLatinSquareCells(List<int> numbers, int dimension) {
+  var invalidCells = <int>[];
+  var emptyCells = <int>[];
   for (var i = 0; i < dimension; i++) {
     var rowMap = <int, int>{};
     var colMap = <int, int>{};
@@ -11,35 +19,35 @@ List<bool> validateLatinSquare(List<int> numbers, int dimension) {
       var rowValue = numbers[i * dimension + j];
       var allowedNumber = rowValue > 0 && rowValue <= dimension;
       if (!allowedNumber) {
-        solved = false;
+        emptyCells.add(i * dimension + j);
       }
       if (rowMap.containsKey(rowValue)) {
-        solved = false;
-        valid = false;
+        invalidCells.add(rowMap[rowValue]);
+        invalidCells.add(i * dimension + j);
         break;
       }
       if (allowedNumber) {
-        rowMap[rowValue] = j;
+        rowMap[rowValue] = i * dimension + j;
       }
       var colValue = numbers[j * dimension + i];
       if (colMap.containsKey(colValue)) {
-        solved = false;
-        valid = false;
+        invalidCells.add(colMap[colValue]);
+        invalidCells.add(j * dimension + i);
         break;
       }
       if (colValue > 0 && colValue <= dimension) {
-        colMap[colValue] = j;
+        colMap[colValue] = j * dimension + i;
       }
     }
   }
-  return [valid, solved];
+  return [invalidCells, emptyCells];
 }
 
 /// detects unsolvable diagonals (112 or such)
 bool isUnsolvableDiagonal(List<int> diagonal) {
   var unique = Set.of(diagonal);
   var first = unique.first;
-  var cnt = diagonal.reduce((memo, el) => memo + (el == first ? 1 : 0));
+  var cnt = diagonal.fold(0, (memo, el) => memo + (el == first ? 1 : 0));
   return unique.length == 2 && (cnt == 1 || cnt == diagonal.length - 1);
 }
 
