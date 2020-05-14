@@ -31,4 +31,4 @@ To start new game, please tap the trash bin icon.
 * Automatically record gameplay.gif.
 * Help (do next valid turn).
 * Translate the rest.
-* Make table border 1px width again.
+* Refactor table board logic.

@@ -232,11 +232,41 @@ class _GameScreenState extends State<GameScreen> {
         key: Key('status_message'),
       );
 
-  Color _validityCellBorderColor(int i, int j) => _solved
-      ? Colors.green
-      : (_invalidCells.contains(i * _dimension + j)
-          ? Colors.red
-          : Colors.black);
+  Color _validityCellBorderColor(int i, int j,
+          {bool top = false, bool left = false}) =>
+      _solved
+          ? Colors.green
+          : (!_isValidCell(i, j) ||
+                  top && i > 0 && !_isValidCell(i - 1, j) ||
+                  left && j > 0 && !_isValidCell(i, j - 1)
+              ? Colors.red
+              : Colors.black);
+
+  bool _isValidCell(int i, int j) =>
+      !_invalidCells.contains(i * _dimension + j);
+
+  Border _cellBorder(int i, int j, {double width = 1}) => Border(
+        top: BorderSide(
+          color: _validityCellBorderColor(i, j, top: true),
+          width: width,
+        ),
+        left: BorderSide(
+          color: _validityCellBorderColor(i, j, left: true),
+          width: width,
+        ),
+        bottom: i == _dimension - 1
+            ? BorderSide(
+                color: _validityCellBorderColor(i, j),
+                width: width,
+              )
+            : BorderSide.none,
+        right: j == _dimension - 1
+            ? BorderSide(
+                color: _validityCellBorderColor(i, j),
+                width: width,
+              )
+            : BorderSide.none,
+      );
 
   Widget _buildTable(BuildContext context) => Table(
         defaultColumnWidth: FixedColumnWidth(_cellWidth),
@@ -254,10 +284,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget _buildCellWithBorder(BuildContext context, int i, int j) => Container(
         height: _cellHeight,
         decoration: BoxDecoration(
-          border: Border.all(
-            color: _validityCellBorderColor(i, j),
-            width: 1,
-          ),
+          border: _cellBorder(i, j, width: 1),
         ),
         child: _buildCell(context, i, j),
       );
