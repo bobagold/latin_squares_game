@@ -228,7 +228,7 @@ class _GameScreenState extends State<GameScreen> {
                 ? (_solved ? _.solvedText : _.validNotSolvedText)
                 : _.invalidText)
             : _.beginText,
-        style: Theme.of(context).textTheme.display1,
+        style: Theme.of(context).textTheme.headline4,
         key: Key('status_message'),
       );
 

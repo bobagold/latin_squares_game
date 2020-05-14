@@ -28,7 +28,7 @@ class TextTapSkin extends Skin {
             builder: (_, __) => Text(
               values[int.parse(controller.text)],
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.display1,
+              style: Theme.of(context).textTheme.headline4,
             ),
           ),
         ),

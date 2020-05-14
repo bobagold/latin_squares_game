@@ -41,6 +41,6 @@ class TextInputSkin extends Skin {
         inputFormatters: [TextInputFormatter.withFunction(_textInputFormatter)],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.display1,
+        style: Theme.of(context).textTheme.headline4,
       );
 }
