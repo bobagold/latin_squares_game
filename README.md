@@ -29,6 +29,6 @@ To start new game, please tap the trash bin icon.
 # Todo
 
 * Automatically record gameplay.gif.
-* Help (do next valid turn).
 * Translate the rest.
 * Refactor table board logic.
+* Show state as unsolvable.

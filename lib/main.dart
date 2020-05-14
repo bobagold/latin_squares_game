@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'logic/logic.dart';
 import 'skins/text_input_skin.dart';
 import 'skins/text_tap_skin.dart';
@@ -143,8 +144,25 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {});
   }
 
-  void _switchLang() {
-    widget.setLocale(AppLocalizations.nextLocaleOf(context));
+  void _nextMove() {
+    var map = List.generate(_dimension, (index) => <int>[]);
+    var zeroCellIdx = -1;
+    for (var entry in _controllers.asMap().entries) {
+      var i = entry.key ~/ _dimension;
+      var cellValue = int.tryParse(entry.value.text);
+      if (zeroCellIdx == -1 && cellValue == 0) {
+        zeroCellIdx = entry.key;
+      }
+      map[i].add(cellValue);
+    }
+    if (zeroCellIdx > -1) {
+      if (solve(map)) {
+        var i = zeroCellIdx ~/ _dimension;
+        var j = zeroCellIdx % _dimension;
+        _controllers[zeroCellIdx].text = '${map[i][j]}';
+        _onChanged();
+      }
+    }
   }
 
   void _switchSkin() {
@@ -158,7 +176,7 @@ class _GameScreenState extends State<GameScreen> {
       return _clear();
     }
     if (idx == 1) {
-      return _switchLang();
+      return _nextMove();
     }
     return _switchSkin();
   }
@@ -183,8 +201,8 @@ class _GameScreenState extends State<GameScreen> {
             icon: Icon(Icons.delete),
           ),
           BottomNavigationBarItem(
-            title: Text(AppLocalizations.nextLocaleOf(context).languageCode),
-            icon: Icon(Icons.language),
+            title: Text('Help'),
+            icon: FaIcon(FontAwesomeIcons.dice),
           ),
           BottomNavigationBarItem(
             title: Text(_useTextTapSkin ? 'digits' : 'smileys'),

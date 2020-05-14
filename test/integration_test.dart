@@ -42,9 +42,9 @@ void main() {
     }
 
     Future<void> _takeScreenshot(String path) async {
-//      var pixels = await driver.screenshot();
-//      var file = File(path);
-//      await file.writeAsBytes(pixels);
+      var pixels = await driver.screenshot();
+      var file = File(path);
+      await file.writeAsBytes(pixels);
     }
 
     setUpAll(() async {
