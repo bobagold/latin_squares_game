@@ -64,8 +64,8 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
-  final double _cellWidth = 60;
-  final double _cellHeight = 65;
+  static const double _cellWidth = 60;
+  static const double _cellHeight = 65;
   AppLocalizations _;
   bool _began = false;
   bool _valid = true;
@@ -200,7 +200,7 @@ class _GameScreenState extends State<GameScreen> {
       GestureDetector(
         onTap: () => _unFocus(context),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: _cellWidth),
+          padding: EdgeInsets.symmetric(vertical: _cellHeight),
           child: Align(
             alignment: Alignment.topCenter,
             child: Column(children: children),
@@ -269,7 +269,10 @@ class _GameScreenState extends State<GameScreen> {
       );
 
   Widget _buildTable(BuildContext context) => Table(
-        defaultColumnWidth: FixedColumnWidth(_cellWidth),
+        defaultColumnWidth: MinColumnWidth(
+          const FixedColumnWidth(_cellWidth),
+          FractionColumnWidth(0.2),
+        ),
         children: List.generate(
           _dimension,
           (i) => TableRow(
@@ -282,7 +285,10 @@ class _GameScreenState extends State<GameScreen> {
       );
 
   Widget _buildCellWithBorder(BuildContext context, int i, int j) => Container(
-        height: _cellHeight,
+        constraints: BoxConstraints(
+          maxWidth: _cellWidth,
+          maxHeight: _cellHeight,
+        ),
         decoration: BoxDecoration(
           border: _cellBorder(i, j, width: 1),
         ),
