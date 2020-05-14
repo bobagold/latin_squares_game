@@ -172,7 +172,6 @@ class _GameScreenState extends State<GameScreen> {
       body: Builder(
         builder: (context) => _bodyBuilder(context, children: [
           Builder(builder: _buildTable),
-          SizedBox(height: 30),
           Builder(builder: _buildMessageArea),
         ]),
       ),
@@ -218,7 +217,10 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildMessageArea(BuildContext context) => Expanded(
         child: SingleChildScrollView(
-          child: _buildMessage(context),
+          child: Container(
+            padding: EdgeInsets.all(_cellWidth),
+            child: _buildMessage(context),
+          ),
         ),
       );
 

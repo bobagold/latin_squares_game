@@ -35,6 +35,12 @@ class TextInputSkin extends Skin {
 
   @override
   Widget build(BuildContext context) => TextFormField(
+        decoration: readOnly
+            ? InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[200],
+              )
+            : const InputDecoration(),
         controller: controller,
         readOnly: readOnly,
         onChanged: (t) => onChanged(),
