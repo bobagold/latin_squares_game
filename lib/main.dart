@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -146,17 +147,19 @@ class _GameScreenState extends State<GameScreen> {
 
   void _nextMove() {
     var map = List.generate(_dimension, (index) => <int>[]);
-    var zeroCellIdx = -1;
+    var zeroCellIndexes = <int>[];
     for (var entry in _controllers.asMap().entries) {
       var i = entry.key ~/ _dimension;
       var cellValue = int.tryParse(entry.value.text);
-      if (zeroCellIdx == -1 && cellValue == 0) {
-        zeroCellIdx = entry.key;
+      if (cellValue == 0) {
+        zeroCellIndexes.add(entry.key);
       }
       map[i].add(cellValue);
     }
-    if (zeroCellIdx > -1) {
+    if (zeroCellIndexes.isNotEmpty) {
       if (solve(map)) {
+        var rand = Random();
+        var zeroCellIdx = zeroCellIndexes[rand.nextInt(zeroCellIndexes.length)];
         var i = zeroCellIdx ~/ _dimension;
         var j = zeroCellIdx % _dimension;
         _controllers[zeroCellIdx].text = '${map[i][j]}';
