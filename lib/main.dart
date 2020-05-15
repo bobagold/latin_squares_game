@@ -219,12 +219,9 @@ class _GameScreenState extends State<GameScreen> {
   Widget _bodyBuilder(BuildContext context, {List<Widget> children}) =>
       GestureDetector(
         onTap: () => _unFocus(context),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: _cellHeight),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Column(children: children),
-          ),
+        child: Column(
+          children: children,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         ),
       );
 
@@ -236,13 +233,9 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  Widget _buildMessageArea(BuildContext context) => Expanded(
-        child: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.all(_cellWidth),
-            child: _buildMessage(context),
-          ),
-        ),
+  Widget _buildMessageArea(BuildContext context) => Align(
+        alignment: Alignment.center,
+        child: _buildMessage(context),
       );
 
   Widget _buildMessage(BuildContext context) => Text(
