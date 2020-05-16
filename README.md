@@ -32,5 +32,4 @@ To start new game, please tap the trash bin icon.
 * Translate the rest.
 * Refactor table board logic.
 * Put help move in the easiest place (that has less different variants).
-* Show state as unsolvable.
 * Revert last move (back).

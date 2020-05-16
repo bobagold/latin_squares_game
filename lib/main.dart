@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'logic/state.dart';
 import 'skins/text_input_skin.dart';
@@ -77,10 +76,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void initState() {
-    // todo disable
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
     for (var k = _controllers.length; k < _dimension * _dimension; k++) {
       _controllers.add(TextEditingController());
     }
@@ -213,6 +208,7 @@ class _GameScreenState extends State<GameScreen> {
                     key: Key(title),
                     title: Text(title),
                     leading: icon,
+                    enabled: onTap != null,
                     onTap: onTap,
                   )),
           Builder(builder: _buildMessageArea),
@@ -241,7 +237,11 @@ class _GameScreenState extends State<GameScreen> {
               builder) =>
       [
         ['New', Icon(Icons.delete), _clear],
-        ['Help', FaIcon(FontAwesomeIcons.magic), _nextMove],
+        [
+          'Help',
+          FaIcon(FontAwesomeIcons.magic),
+          _gameState.status == GameStatus.solvable ? _nextMove : null
+        ],
         [
           AppLocalizations.nextLocaleOf(context).languageCode,
           Icon(Icons.language),

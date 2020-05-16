@@ -45,12 +45,15 @@ class Game {
     var hasEmptyCells = checks[1].isNotEmpty;
     if (hasInvalid) {
       gameStatus = GameStatus.invalid;
-    } else if (hasEmptyCells) {
+    } else if (hasEmptyCells &&
+        Game._(GameStatus.solvable, cells, invalidCells).nextMove() != null) {
       gameStatus = GameStatus.solvable;
+    } else if (hasEmptyCells) {
+      gameStatus = GameStatus.unsolvable;
     } else {
       gameStatus = GameStatus.solved;
     }
-    return Game._(gameStatus, cells, invalidCells);
+    return Game._(gameStatus, List.unmodifiable(cells), invalidCells);
   }
 
   void copyToControllers(List<TextEditingController> controllers) {
