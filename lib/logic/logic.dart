@@ -8,7 +8,8 @@ List<bool> validateLatinSquare(List<int> numbers, int dimension) {
   return [invalidCells.isEmpty, invalidCells.isEmpty && emptyCells.isEmpty];
 }
 
-/// validate latin square cells
+/// validate latin square cells, very slow
+/// todo fast implementation
 List<List<int>> validateLatinSquareCells(List<int> numbers, int dimension) {
   var invalidCells = <int>[];
   var emptyCells = <int>[];
@@ -24,7 +25,7 @@ List<List<int>> validateLatinSquareCells(List<int> numbers, int dimension) {
       if (rowMap.containsKey(rowValue)) {
         invalidCells.add(rowMap[rowValue]);
         invalidCells.add(i * dimension + j);
-        break;
+//        break;
       }
       if (allowedNumber) {
         rowMap[rowValue] = i * dimension + j;
@@ -33,7 +34,7 @@ List<List<int>> validateLatinSquareCells(List<int> numbers, int dimension) {
       if (colMap.containsKey(colValue)) {
         invalidCells.add(colMap[colValue]);
         invalidCells.add(j * dimension + i);
-        break;
+//        break;
       }
       if (colValue > 0 && colValue <= dimension) {
         colMap[colValue] = j * dimension + i;

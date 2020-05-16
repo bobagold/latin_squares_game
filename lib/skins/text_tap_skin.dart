@@ -21,9 +21,8 @@ class TextTapSkin extends Skin {
   @override
   Widget build(BuildContext context) => InkWell(
         onTap: readOnly ? null : _onTap,
-        child: Container(
-          decoration: readOnly ? BoxDecoration(color: Colors.grey[200]) : null,
-          padding: EdgeInsets.all(12),
+        child: Align(
+          alignment: Alignment.center,
           child: AnimatedBuilder(
             animation: controller,
             builder: (_, __) => Text(

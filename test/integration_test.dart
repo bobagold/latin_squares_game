@@ -12,7 +12,8 @@ void main() {
 
     var findAllCellsMessage = find.text('fill all cells');
 
-    Future _startNewGame() => driver.tap(find.text('New'), timeout: timeout);
+    Future _startNewGame() =>
+        driver.tap(find.byValueKey('New'), timeout: timeout);
 
     Future _waitForIt(SerializableFinder finder) =>
         driver.waitFor(finder, timeout: timeout);
@@ -32,13 +33,13 @@ void main() {
     }
 
     Future _digits() async {
-      await driver.tap(find.text('digits'), timeout: timeout);
-      await driver.waitFor(find.text('smileys'), timeout: timeout);
+      await driver.tap(find.byValueKey('digits'), timeout: timeout);
+      await driver.waitFor(find.byValueKey('smileys'), timeout: timeout);
     }
 
     Future _smileys() async {
-      await driver.tap(find.text('smileys'), timeout: timeout);
-      await driver.waitFor(find.text('digits'), timeout: timeout);
+      await driver.tap(find.byValueKey('smileys'), timeout: timeout);
+      await driver.waitFor(find.byValueKey('digits'), timeout: timeout);
     }
 
     Future<void> _takeScreenshot(String path) async {

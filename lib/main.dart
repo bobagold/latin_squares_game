@@ -67,7 +67,6 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   static const double _cellWidth = 60;
-  static const double _cellHeight = 65;
   AppLocalizations _;
   bool _began = false;
   bool _valid = true;
@@ -145,6 +144,10 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {});
   }
 
+  void _switchLang() {
+    widget.setLocale(AppLocalizations.nextLocaleOf(context));
+  }
+
   void _nextMove() {
     var map = List.generate(_dimension, (index) => <int>[]);
     var zeroCellIndexes = <int>[];
@@ -174,55 +177,119 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  void _tapBottomNav(int idx) {
-    if (idx == 0) {
-      return _clear();
-    }
-    if (idx == 1) {
-      return _nextMove();
-    }
-    return _switchSkin();
-  }
-
   @override
   Widget build(BuildContext context) {
+    return OrientationBuilder(builder: _build);
+  }
+
+  Widget _build(BuildContext context, Orientation orientation) {
+    var title = 'Latin squares game';
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Latin squares game'),
-      ),
+      appBar: orientation == Orientation.portrait
+          ? AppBar(
+              title: Text(title),
+            )
+          : null,
       body: Builder(
-        builder: (context) => _bodyBuilder(context, children: [
-          Builder(builder: _buildTable),
-          Builder(builder: _buildMessageArea),
-        ]),
+        builder: (context) => _bodyBuilder(
+          context,
+          child: orientation == Orientation.portrait
+              ? Column(
+                  children: [
+                    LayoutBuilder(builder: _buildTable),
+                    Builder(builder: _buildMessageArea),
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                )
+              : Row(
+                  children: [
+                    _buildDrawer(context, title),
+                    LayoutBuilder(builder: _buildTable),
+                    SizedBox(),
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+        ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: _tapBottomNav,
-        items: [
-          BottomNavigationBarItem(
-            title: Text('New'),
-            icon: Icon(Icons.delete),
+      bottomNavigationBar: orientation == Orientation.portrait
+          ? _buildBottomNavBar(context)
+          : null,
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context, String title) {
+    return Container(
+      width: 300,
+      child: ListView(
+        children: [
+          PhysicalModel(
+            elevation: 3,
+            color: Theme.of(context).accentColor,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headline5,
+              ),
+            ),
           ),
-          BottomNavigationBarItem(
-            title: Text('Help'),
-            icon: FaIcon(FontAwesomeIcons.dice),
-          ),
-          BottomNavigationBarItem(
-            title: Text(_useTextTapSkin ? 'digits' : 'smileys'),
-            icon: Icon(_useTextTapSkin ? Icons.looks_one : Icons.tag_faces),
-          ),
+          ..._navItems(
+              context,
+              (title, icon, onTap) => ListTile(
+                    key: Key(title),
+                    title: Text(title),
+                    leading: icon,
+                    onTap: onTap,
+                  )),
+          Builder(builder: _buildMessageArea),
         ],
       ),
     );
   }
 
-  Widget _bodyBuilder(BuildContext context, {List<Widget> children}) =>
-      GestureDetector(
-        onTap: () => _unFocus(context),
-        child: Column(
-          children: children,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget _buildBottomNavBar(BuildContext context) => BottomAppBar(
+        child: Row(
+          children: _navItems(
+              context,
+              (title, icon, onTap) => Expanded(
+                      child: IconButton(
+                    key: Key(title),
+                    tooltip: title,
+                    icon: icon,
+                    onPressed: onTap,
+                  ))),
         ),
+      );
+
+  List<Widget> _navItems(
+          BuildContext context,
+          Widget Function(String title, Widget icon, VoidCallback onTap)
+              builder) =>
+      [
+        ['New', Icon(Icons.delete), _clear],
+        ['Help', FaIcon(FontAwesomeIcons.magic), _nextMove],
+        [
+          AppLocalizations.nextLocaleOf(context).languageCode,
+          Icon(Icons.language),
+          _switchLang
+        ],
+        [
+          _useTextTapSkin ? 'digits' : 'smileys',
+          Icon(_useTextTapSkin ? Icons.looks_one : Icons.tag_faces),
+          _switchSkin
+        ],
+      ]
+          .map((arr) => builder(
+                arr[0],
+                arr[1],
+                arr[2],
+              ))
+          .toList();
+
+  Widget _bodyBuilder(BuildContext context, {Widget child}) => GestureDetector(
+        onTap: () => _unFocus(context),
+        child: child,
       );
 
   void _unFocus(BuildContext context) {
@@ -284,11 +351,14 @@ class _GameScreenState extends State<GameScreen> {
             : BorderSide.none,
       );
 
-  Widget _buildTable(BuildContext context) => Table(
-        defaultColumnWidth: MinColumnWidth(
-          const FixedColumnWidth(_cellWidth),
-          FractionColumnWidth(0.2),
-        ),
+  Widget _buildTable(BuildContext context, BoxConstraints constraints) => Table(
+        defaultColumnWidth: constraints.maxWidth.isFinite
+            ? MinColumnWidth(
+                const FixedColumnWidth(_cellWidth),
+                FractionColumnWidth(0.95 / _dimension),
+              )
+            : FixedColumnWidth(
+                min(0.95 * constraints.maxHeight / _dimension, _cellWidth)),
         children: List.generate(
           _dimension,
           (i) => TableRow(
@@ -301,14 +371,14 @@ class _GameScreenState extends State<GameScreen> {
       );
 
   Widget _buildCellWithBorder(BuildContext context, int i, int j) => Container(
-        constraints: BoxConstraints(
-          maxWidth: _cellWidth,
-          maxHeight: _cellHeight,
-        ),
         decoration: BoxDecoration(
-          border: _cellBorder(i, j, width: 1),
+          border: _cellBorder(i, j, width: 0),
+          color: i == j ? Colors.grey[200] : null,
         ),
-        child: _buildCell(context, i, j),
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: _buildCell(context, i, j),
+        ),
       );
 
   Widget _buildCell(BuildContext context, int i, int j) => _useTextTapSkin
