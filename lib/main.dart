@@ -64,14 +64,14 @@ class GameScreen extends StatefulWidget {
   _GameScreenState createState() => _GameScreenState();
 }
 
+enum GameState { initialDemo, newGame, invalid, unsolvable, solvable, solved }
+
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   static const double _cellWidth = 60;
   AppLocalizations _;
-  bool _began = false;
-  bool _valid = true;
+  GameState _gameState = GameState.initialDemo;
   List<int> _invalidCells = [];
-  bool _solved = true;
   final List<TextEditingController> _controllers = [];
   List<String> _values;
   bool _useTextTapSkin = true;
@@ -137,9 +137,7 @@ class _GameScreenState extends State<GameScreen> {
       var value = _initialValue(i, j);
       entry.value.text = '$value';
     }
-    _began = false;
-    _valid = true;
-    _solved = true;
+    _gameState = GameState.newGame;
     _diagonal = List.generate(_dimension + 1, (i) => _initialValue(i, i));
     setState(() {});
   }
@@ -306,9 +304,11 @@ class _GameScreenState extends State<GameScreen> {
       );
 
   Widget _buildMessage(BuildContext context) => Text(
-        _began
-            ? (_valid
-                ? (_solved ? _.solvedText : _.validNotSolvedText)
+        _gameState != GameState.initialDemo
+            ? (_gameState != GameState.invalid
+                ? (_gameState == GameState.solved
+                    ? _.solvedText
+                    : _.validNotSolvedText)
                 : _.invalidText)
             : _.beginText,
         style: Theme.of(context).textTheme.headline4,
@@ -317,7 +317,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Color _validityCellBorderColor(int i, int j,
           {bool top = false, bool left = false}) =>
-      _solved
+      _gameState == GameState.solved
           ? Colors.green
           : (!_isValidCell(i, j) ||
                   top && i > 0 && !_isValidCell(i - 1, j) ||
@@ -420,11 +420,17 @@ class _GameScreenState extends State<GameScreen> {
     var numbers =
         _controllers.map((controller) => int.parse(controller.text)).toList();
     var checks = validateLatinSquareCells(numbers, _dimension);
-    if (_valid != checks[0] || _solved != checks[1]) {
+    var gameState;
+    if (checks[0].isNotEmpty) {
+      gameState = GameState.invalid;
+    } else if (checks[1].isNotEmpty) {
+      gameState = GameState.solvable;
+    } else {
+      gameState = GameState.solved;
+    }
+    if (_gameState != gameState || _invalidCells != checks[0]) {
       setState(() {
-        _began = true;
-        _valid = checks[0].isEmpty;
-        _solved = checks[0].isEmpty && checks[1].isEmpty;
+        _gameState = gameState;
         _invalidCells = checks[0];
       });
     }
