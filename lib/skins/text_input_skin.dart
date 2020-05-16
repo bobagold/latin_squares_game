@@ -9,7 +9,7 @@ class TextInputSkin extends Skin {
   const TextInputSkin({
     Key key,
     TextEditingController controller,
-    VoidCallback onChanged,
+    ValueSetter<int> onChanged,
     bool readOnly,
   }) : super(
           key: key,
@@ -37,7 +37,7 @@ class TextInputSkin extends Skin {
   Widget build(BuildContext context) => TextFormField(
         controller: controller,
         readOnly: readOnly,
-        onChanged: (t) => onChanged(),
+        onChanged: (t) => onChanged(int.parse(t)),
         inputFormatters: [TextInputFormatter.withFunction(_textInputFormatter)],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,

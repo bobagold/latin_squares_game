@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 @immutable
 abstract class Skin extends StatelessWidget {
   final TextEditingController controller;
-  final VoidCallback onChanged;
+  final ValueSetter<int> onChanged;
   final bool readOnly;
 
   const Skin({

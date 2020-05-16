@@ -8,7 +8,7 @@ class TextTapSkin extends Skin {
   const TextTapSkin({
     Key key,
     TextEditingController controller,
-    VoidCallback onChanged,
+    ValueSetter<int> onChanged,
     bool readOnly,
     @required this.values,
   }) : super(
@@ -38,6 +38,6 @@ class TextTapSkin extends Skin {
     var oldValue = int.parse(controller.text);
     var newValue = (oldValue + 1) % (values.length);
     controller.text = newValue.toString();
-    onChanged();
+    onChanged(newValue);
   }
 }

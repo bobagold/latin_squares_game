@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'logic/logic.dart';
+import 'logic/state.dart';
 import 'skins/text_input_skin.dart';
 import 'skins/text_tap_skin.dart';
 import 'translations/localizations.dart';
@@ -52,6 +52,7 @@ class GameScreen extends StatefulWidget {
   final ValueSetter<Locale> setLocale;
   final StreamController<String> requests;
   final StreamController<String> responses;
+
   GameScreen({
     Key key,
     this.values,
@@ -64,30 +65,30 @@ class GameScreen extends StatefulWidget {
   _GameScreenState createState() => _GameScreenState();
 }
 
-enum GameState { initialDemo, newGame, invalid, unsolvable, solvable, solved }
-
 class _GameScreenState extends State<GameScreen> {
   final int _dimension = 5;
   static const double _cellWidth = 60;
   AppLocalizations _;
-  GameState _gameState = GameState.initialDemo;
-  List<int> _invalidCells = [];
+  Game _gameState = Game.initialDemo();
   final List<TextEditingController> _controllers = [];
   List<String> _values;
   bool _useTextTapSkin = true;
-  List<int> _diagonal;
   StreamSubscription<String> _subscription;
 
   @override
   void initState() {
+    // todo disable
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    for (var k = _controllers.length; k < _dimension * _dimension; k++) {
+      _controllers.add(TextEditingController());
+    }
+    _gameState.copyToControllers(_controllers);
     _values = widget.values;
     if (_values == null) {
       _values = List.generate(_dimension + 1, (i) => i.toString());
     }
-    _diagonal = List.generate(_dimension + 1, (i) => _initialValue(i, i));
     _subscribe();
     super.initState();
   }
@@ -103,7 +104,7 @@ class _GameScreenState extends State<GameScreen> {
     _subscription?.cancel();
     widget.requests?.stream?.listen((event) {
       if (event == 'diagonal'.toUpperCase()) {
-        return widget.responses.sink.add(_diagonal.join(','));
+        return widget.responses.sink.add(_gameState.diagonal.join(','));
       }
       if (event == 'is_smileys'.toUpperCase()) {
         return widget.responses.sink.add(_useTextTapSkin ? 'true' : 'false');
@@ -117,28 +118,17 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _clear() {
-    var diagonal = randomizeDiagonal(_dimension);
-    _diagonal = diagonal;
-    for (var entry in _controllers.asMap().entries) {
-      var i = entry.key ~/ _dimension;
-      var j = entry.key % _dimension;
-      var value = i == j ? diagonal[j] : 0;
-      entry.value.text = '$value';
-    }
-    _onChanged();
+    setState(() {
+      _gameState = Game.newGame();
+      _gameState.copyToControllers(_controllers);
+    });
   }
 
   void _reset() {
     _useTextTapSkin = true;
     widget.setLocale(null);
-    for (var entry in _controllers.asMap().entries) {
-      var i = entry.key ~/ _dimension;
-      var j = entry.key % _dimension;
-      var value = _initialValue(i, j);
-      entry.value.text = '$value';
-    }
-    _gameState = GameState.newGame;
-    _diagonal = List.generate(_dimension + 1, (i) => _initialValue(i, i));
+    _gameState = Game.initialDemo();
+    _gameState.copyToControllers(_controllers);
     setState(() {});
   }
 
@@ -147,25 +137,10 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _nextMove() {
-    var map = List.generate(_dimension, (index) => <int>[]);
-    var zeroCellIndexes = <int>[];
-    for (var entry in _controllers.asMap().entries) {
-      var i = entry.key ~/ _dimension;
-      var cellValue = int.tryParse(entry.value.text);
-      if (cellValue == 0) {
-        zeroCellIndexes.add(entry.key);
-      }
-      map[i].add(cellValue);
-    }
-    if (zeroCellIndexes.isNotEmpty) {
-      if (solve(map)) {
-        var rand = Random();
-        var zeroCellIdx = zeroCellIndexes[rand.nextInt(zeroCellIndexes.length)];
-        var i = zeroCellIdx ~/ _dimension;
-        var j = zeroCellIdx % _dimension;
-        _controllers[zeroCellIdx].text = '${map[i][j]}';
-        _onChanged();
-      }
+    var nm = _gameState.nextMove();
+    if (nm != null) {
+      _controllers[nm.i * _dimension + nm.j].text = '${nm.value}';
+      _onChanged(nm.i, nm.j, nm.value);
     }
   }
 
@@ -304,9 +279,9 @@ class _GameScreenState extends State<GameScreen> {
       );
 
   Widget _buildMessage(BuildContext context) => Text(
-        _gameState != GameState.initialDemo
-            ? (_gameState != GameState.invalid
-                ? (_gameState == GameState.solved
+        _gameState.status != GameStatus.initialDemo
+            ? (_gameState.status != GameStatus.invalid
+                ? (_gameState.status == GameStatus.solved
                     ? _.solvedText
                     : _.validNotSolvedText)
                 : _.invalidText)
@@ -317,7 +292,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Color _validityCellBorderColor(int i, int j,
           {bool top = false, bool left = false}) =>
-      _gameState == GameState.solved
+      _gameState.status == GameStatus.solved
           ? Colors.green
           : (!_isValidCell(i, j) ||
                   top && i > 0 && !_isValidCell(i - 1, j) ||
@@ -326,7 +301,7 @@ class _GameScreenState extends State<GameScreen> {
               : Colors.black);
 
   bool _isValidCell(int i, int j) =>
-      !_invalidCells.contains(i * _dimension + j);
+      !_gameState.invalidCells.contains(i * _dimension + j);
 
   Border _cellBorder(int i, int j, {double width = 1}) => Border(
         top: BorderSide(
@@ -385,27 +360,21 @@ class _GameScreenState extends State<GameScreen> {
       ? TextTapSkin(
           key: Key('cell${i}x$j'),
           controller: _controller(i, j),
-          onChanged: _onChanged,
+          onChanged: (value) => _onChanged(i, j, value),
           readOnly: i == j,
           values: _values,
         )
       : TextInputSkin(
           key: Key('cell${i}x$j'),
           controller: _controller(i, j),
-          onChanged: _onChanged,
+          onChanged: (value) => _onChanged(i, j, value),
           readOnly: i == j,
         );
 
   TextEditingController _controller(int i, int j) {
     var idx = i * _dimension + j;
-    for (var k = _controllers.length; k <= idx; k++) {
-      var value = _initialValue(k ~/ _dimension, k % _dimension);
-      _controllers.add(TextEditingController(text: value.toString()));
-    }
     return _controllers[idx];
   }
-
-  int _initialValue(int i, int j) => 1 + (i + j) % _dimension;
 
   @override
   void dispose() {
@@ -416,23 +385,9 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
-  void _onChanged() {
-    var numbers =
-        _controllers.map((controller) => int.parse(controller.text)).toList();
-    var checks = validateLatinSquareCells(numbers, _dimension);
-    var gameState;
-    if (checks[0].isNotEmpty) {
-      gameState = GameState.invalid;
-    } else if (checks[1].isNotEmpty) {
-      gameState = GameState.solvable;
-    } else {
-      gameState = GameState.solved;
-    }
-    if (_gameState != gameState || _invalidCells != checks[0]) {
-      setState(() {
-        _gameState = gameState;
-        _invalidCells = checks[0];
-      });
-    }
+  void _onChanged(int i, int j, int value) {
+    setState(() {
+      _gameState = _gameState.move(Move(i, j, value));
+    });
   }
 }
