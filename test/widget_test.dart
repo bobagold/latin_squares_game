@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:latinsquaresgame/main.dart';
+import 'package:latinsquaresgame/screens/game.dart';
 import 'package:latinsquaresgame/translations/localizations.dart';
 
 void main() {

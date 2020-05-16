@@ -30,6 +30,5 @@ To start new game, please tap the trash bin icon.
 
 * Automatically record gameplay.gif.
 * Translate the rest.
-* Refactor table board logic.
 * Put help move in the easiest place (that has less different variants).
 * Revert last move (back).

@@ -98,6 +98,7 @@ class AppLocalizations extends TranslationEn {
   String get validNotSolvedText =>
       _localizedValues[locale.languageCode].validNotSolvedText;
   String get invalidText => _localizedValues[locale.languageCode].invalidText;
+  String get title => _localizedValues[locale.languageCode].title;
 
   @override
   TextDirection get textDirection =>

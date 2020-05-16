@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'skin.dart';
 
 /// Text tap skin for the game board
+@immutable
 class TextTapSkin extends Skin {
   final List<String> values;
 

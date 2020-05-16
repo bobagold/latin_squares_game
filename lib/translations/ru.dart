@@ -9,6 +9,7 @@ class TranslationRu extends TranslationEn {
   final String solvedText = 'молодец!';
   final String validNotSolvedText = 'заполни все клетки';
   final String invalidText = 'есть повторения';
+  final String title = 'Латинские квадраты';
 
   const TranslationRu();
 }
